@@ -1,0 +1,106 @@
+
+function loadData(url, onOk, onFail) {
+  const xhr = new XMLHttpRequest();
+  xhr.open("GET", url);
+  xhr.responseType = "json";
+
+  xhr.onload = () => {
+    if (xhr.status === 200) {
+      onOk(xhr.response);
+    } else {
+      onFail("ошибка: " + xhr.status);
+    }
+  };
+
+  xhr.onerror = () => {
+    onFail("jшибка соединения");
+  };
+
+  xhr.send();
+}
+
+loadData(
+  "https://jsonplaceholder.typicode.com/posts",
+  (data) => {
+    const sorted = data.sort((a, b) => b.title.length - a.title.length);
+    console.log(" по убыванию длины title:");
+    console.table(sorted.slice(0, 5));
+  },
+  (err) => console.error(err)
+);
+loadData(
+  "https://jsonplaceholder.typicode.com/comments",
+  (data) => {
+    const sorted = data.sort((a, b) => a.name.localeCompare(b.name));
+    console.log("комментари отсортированные по имени:");
+    console.table(sorted.slice(0, 5));
+  },
+  (err) => console.error(err)
+);
+
+const URL = "https://jsonplaceholder.typicode.com";
+fetch(URL + "/users")
+  .then((res) => res.json())
+  .then((data) => {
+    const users = data.map((u) => ({
+      id: u.id,
+      name: u.name,
+      username: u.username,
+      email: u.email,
+      phone: u.phone,
+    }));
+    console.log("пользователи :");
+    console.table(users);
+  })
+  .catch((err) => console.error("о шибка при загрузке пользователей:", err));
+fetch(URL + "/todos")
+  .then((res) => res.json())
+
+  .then((data) => {
+    const todos = data.filter((t) => !t.completed);
+    console.log("незаверш задачи (completed = false):");
+    console.table(todos.slice(0, 10));
+  })
+  .catch((err) => console.error("ошибка при загрузке задач:", err));
+  async function getData(url) {
+  const res = await fetch(url);
+  if (!res.ok) {
+    throw new Error("ошибка: " + res.status);
+  }
+  return res.json();
+}
+
+async function main() {
+  try {
+    
+    const posts = await getData(URL + "/posts");
+    const sortedPosts = posts.sort((a, b) => b.title.length - a.title.length);
+    console.log("async/await → посты:");
+    console.table(sortedPosts.slice(0, 5));
+
+    
+    const comments = await getData(URL + "/comments");
+    const sortedComments = comments.sort((a, b) => a.name.localeCompare(b.name));
+    console.log("async/await → комментарии:");
+    console.table(sortedComments.slice(0, 5));
+
+    const users = await getData(URL + "/users");
+    const shortUsers = users.map((u) => ({
+      id: u.id,
+      name: u.name,
+      username: u.username,
+      email: u.email,
+      phone: u.phone,
+    }));
+    console.log("async/Await → пользователи:");
+    console.table(shortUsers);
+    const todos = await getData(URL + "/todos");
+    const incomplete = todos.filter((t) => !t.completed);
+    console.log("async/Await → незаверш задачи:");
+    console.table(incomplete.slice(0, 10));
+  } catch (err) {
+    console.error("ошибка:", err);
+  }
+}
+
+main();
